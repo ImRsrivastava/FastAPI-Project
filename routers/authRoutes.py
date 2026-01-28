@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from request_models.authRequestModel import AuthRequest, TokenRequest
 from passlib.context import CryptContext
 # from models.AuthsModel import Auths
@@ -7,16 +7,20 @@ from starlette import status
 from db.dbConfig import DB_Dependency
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import timedelta, datetime
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix = "/auth",
+    tags = [ "Auth-Routes" ]
+)
 
 SECRET_KEY = "d1ed0c896e1a90d87a3d757c1063dc253241d7131a348337a9cb5dfa4d3ab42a"
 ALGORITHM = "HS256"
 
 bcryptContext = CryptContext( schemes = ['bcrypt'], deprecated = "auto" )
+oauth2Bearer = OAuth2PasswordBearer(tokenUrl = "auth/token")
 
 
 def authenticateAuth (username: str, password: str, db):
@@ -35,9 +39,21 @@ def generateAccessToken (username: str, userId: int, expires_delta: timedelta):
     return jwt.encode ( encode, SECRET_KEY, algorithm = ALGORITHM )
 
 
+async def getCurrentAuthUser (token: Annotated[str, Depends(oauth2Bearer)]):
+    try:
+        payload = jwt.decode( token, SECRET_KEY, algorithms=[ALGORITHM] )
+        userName: str = payload.get("sub")
+        userId: int = payload.get("id")
 
-@router.post('/auth', status_code = status.HTTP_201_CREATED)
-async def createAuthenticate (db: DB_Dependency, authRequest: AuthRequest):
+        if userName is None or userId is None:
+            raise HTTPException ( status_code = status.HTTP_401_UNAUTHORIZED, detail = "Not able to validate the user.")
+        return { "username": userName, "id": userId }
+    except JWTError:
+        raise HTTPException ( status_code = status.HTTP_401_UNAUTHORIZED, detail = "Not able to validate the user.")
+
+
+@router.post('/', status_code = status.HTTP_201_CREATED)
+async def create_authenticate (db: DB_Dependency, authRequest: AuthRequest):
     createAuth = Auths(
         first_name  =   authRequest.first_name,
         last_name   =   authRequest.last_name,
@@ -57,7 +73,7 @@ async def login_for_access_token (form_data: Annotated[OAuth2PasswordRequestForm
     auth = authenticateAuth (form_data.username, form_data.password, db)
 
     if not auth:
-        return "Authentication Failed"
+        raise HTTPException ( status_code = status.HTTP_401_UNAUTHORIZED, detail = "Not able to validate the user.")
     
     token = generateAccessToken ( auth.username, auth.id, timedelta(minutes = 20) )
     return { "access_token": token, "token_type": "bearer"}
