@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+    api:
+        build: .
+        container_name: fastapi_app
+        ports:
+            -   "${DOCKER_APP_HOST_PORT}:8000"
+        env_file:
+            -   .env
+        depends_on:
+            db:
+                condition: service_healthy
+
+        networks:
+            -   backend
+
+    db:
+        image: mysql:latest
+        container_name: fastapi_db
+        env_file:
+            -   .env
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DOCKER_MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${DOCKER_MYSQL_DATABASE}
+        ports:
+            -   "${DOCKER_MY_SQL_HOST_PORT}:3306"
+        volumes:
+            -   ${DOCKER_VOLUME}:/var/lib/mysql
+        networks:
+            -   backend
+        restart: always
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+networks:
+    backend:
+        driver:
+            bridge
+
