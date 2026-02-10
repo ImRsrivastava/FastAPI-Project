@@ -1,7 +1,8 @@
 version: "3.9"
 services:
     api:
-        build: .
+        # build: .
+        image: imrsrivastava/fastapi-mysql:latest
         container_name: fastapi_app
         ports:
             -   "${DOCKER_APP_HOST_PORT}:8000"
@@ -10,9 +11,9 @@ services:
         depends_on:
             db:
                 condition: service_healthy
-
         networks:
             -   backend
+        restart: always
 
     db:
         image: mysql:latest

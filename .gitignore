@@ -19,3 +19,5 @@ __pycache__/
 
 # .git config
 .git/ 
+
+docker/mysql/data/*
