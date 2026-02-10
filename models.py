@@ -13,6 +13,7 @@ class Auths (Base):
     email       =   Column ( String (150) )
     password    =   Column ( String (255) )
     role        =   Column ( String (100) )
+    phone_number=   Column ( String (50) )
     is_active   =   Column ( Boolean, default = True )
 
 

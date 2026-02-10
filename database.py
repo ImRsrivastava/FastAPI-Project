@@ -3,7 +3,12 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 
+<<<<<<< Updated upstream
 SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:Root%40123@db/todo_app"
+=======
+# SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:root@localhost/udemy_todo_app"
+SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://postgres:Root%40123@localhost:5432/TodoApplicationDB"
+>>>>>>> Stashed changes
 
 Engine = create_engine( SQLALCHEMY_DATABASE_URL )
 

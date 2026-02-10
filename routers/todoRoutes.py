@@ -50,7 +50,10 @@ async def create_todo (auth: Auth_Dependency, db: DB_Dependency, todo_req: TodoR
 
 ###### Put Method
 @router.put("/{todo_id}", status_code = status.HTTP_204_NO_CONTENT)
-async def update_todo (db:DB_Dependency, todo_req: TodoRequest, todo_id: int = Path (gt = 0)):
+async def update_todo (auth: Auth_Dependency, db:DB_Dependency, todo_req: TodoRequest, todo_id: int = Path (gt = 0)):
+    if auth is None:
+        raise HTTPException ( status_code = 401, detail = "Authentication Failed" )
+    
     todoData = db.query(Todos).filter(Todos.id == todo_id).first()
     if todoData is None:
         raise HTTPException (status_code = 404, detail = "Todo associated with provided ID, NOT FOUND!")
@@ -66,8 +69,11 @@ async def update_todo (db:DB_Dependency, todo_req: TodoRequest, todo_id: int = P
 
 ###### Delete Method
 @router.delete("/{todo_id}", status_code = status.HTTP_204_NO_CONTENT)
-async def delete_todo (db: DB_Dependency, todo_id: int = Path (gt = 0)):
-    todoData = db.query(Todos).filter (Todos.id == todo_id)
+async def delete_todo (auth: Auth_Dependency, db: DB_Dependency, todo_id: int = Path (gt = 0)):
+    if auth is None:
+        raise HTTPException ( status_code = 401, detail = "Authentication Failed" )
+
+    todoData = db.query(Todos).filter(Todos.id == todo_id).filter(Todos.user_id == auth.get('id'))
     todoExist = todoData.first()
 
     if todoExist is None:

@@ -9,6 +9,7 @@ class AuthRequest (BaseModel):
     email: str
     password: str
     role: str
+    phone_number: str
     is_active: bool
 
 
