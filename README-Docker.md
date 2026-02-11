@@ -665,63 +665,313 @@ Use Docker Compose when:
 - Microservices on a single host
 
 ==========================================================================================================
-32. DOCKER REGISTRY
+32. DOCKER REGISTRY (IMAGE STORAGE & DISTRIBUTION)
 ==========================================================================================================
 
+Docker Registry is a place where Docker images are stored,
+shared, and downloaded.
 
+In simple words:
+Docker Registry is like GitHub, but for Docker images.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Instead of source code, it stores:
+- Docker Images
+- Different versions (tags) of images
 
 =====================================================
-21. FINAL SUMMARY
+33. WHY DO WE NEED A DOCKER REGISTRY?
 =====================================================
 
-- Docker packages apps into containers
-- Docker Engine runs everything
-- Docker Daemon does actual work
-- Docker CLI sends commands
-- Networks allow container communication
-- User-defined bridge networks are best
-- Volumes keep data safe
-- Bind mounts give direct host access
+Without a registry:
+- Images exist only on your local system
+- Cannot share images with team members
+- Cannot deploy images to servers easily
+
+With a registry:
+- Build image once
+- Push it to registry
+- Pull it anywhere (server, cloud, CI/CD)
+
+=====================================================
+34. TYPES OF DOCKER REGISTRIES
+=====================================================
+
+1) Docker Hub (Public Registry)
+-------------------------------
+- Default Docker registry
+- Maintained by Docker
+- Free public repositories
+- Paid private repositories
+
+Example:
+    mysql
+    nginx
+    node
+
+Image format:
+    username/image-name:tag
+
+Example:
+    rishabh/react-profile:latest
+
+2) Private Registry
+-------------------
+- Hosted by organization
+- More secure
+- Used in enterprises
+
+Examples:
+- AWS ECR
+- Azure Container Registry
+- Google Artifact Registry
+- Self-hosted registry
+
+=====================================================
+35. DOCKER HUB WORKFLOW
+=====================================================
+
+Typical image workflow:
+
+1. Build image locally
+2. Tag image
+3. Push image to registry
+4. Pull image on another machine
+5. Run container
+
+=====================================================
+36. LOGIN TO DOCKER REGISTRY
+=====================================================
+
+Login to Docker Hub:
+    docker login
+
+You will be asked for:
+- Docker Hub username
+- Password / Access Token
+
+=====================================================
+37. TAG DOCKER IMAGE
+=====================================================
+
+Before pushing, image must be tagged.
+
+Syntax:
+    docker tag <local-image> <username>/<image-name>:<tag>
+
+Example:
+    docker tag react-profile rishabh/react-profile:latest
+
+=====================================================
+38. PUSH IMAGE TO DOCKER REGISTRY
+=====================================================
+
+Push image:
+    docker push rishabh/react-profile:latest
+
+Now image is available in Docker Hub.
+
+=====================================================
+39. PULL IMAGE FROM REGISTRY
+=====================================================
+
+On any machine:
+    docker pull rishabh/react-profile:latest
+
+=====================================================
+40. BENEFITS OF DOCKER REGISTRY
+=====================================================
+
+- Centralized image storage
+- Easy collaboration
+- CI/CD integration
+- Version control using tags
+- Faster deployments
+
+=====================================================
+41. REAL-WORLD USE CASE
+=====================================================
+
+Developer:
+- Builds image
+- Pushes to registry
+
+Server:
+- Pulls image
+- Runs container
+
+CI/CD:
+- Automatically builds & pushes image
+- Automatically deploys
+
+==========================================================================================================
+42. MULTI-STAGE DOCKER BUILDS
+==========================================================================================================
+
+Multi-stage Docker build is an advanced Dockerfile technique
+used to:
+- Reduce image size
+- Improve security
+- Optimize build process
+
+It allows multiple `FROM` statements
+inside a single Dockerfile.
+
+=====================================================
+43. PROBLEM WITH NORMAL DOCKERFILE
+=====================================================
+
+In a normal Dockerfile:
+- Build tools stay inside final image
+- Image becomes large
+- Unnecessary files included
+
+Example problems:
+- Node modules build cache
+- Compilers
+- Temporary files
+
+=====================================================
+44. WHAT IS MULTI-STAGE BUILD?
+=====================================================
+
+Multi-stage build divides Dockerfile into stages:
+
+- Stage 1: Build stage
+- Stage 2: Runtime stage
+
+Only required output is copied
+from build stage to final image.
+
+=====================================================
+45. BASIC MULTI-STAGE DOCKERFILE STRUCTURE
+=====================================================
+
+General format:
+
+-----------------------------------
+FROM base-image AS builder
+# build steps
+
+FROM runtime-image
+# copy required files from builder
+-----------------------------------
+
+Each `FROM` keyword starts a new stage.
+
+=====================================================
+46. EXAMPLE: MULTI-STAGE NODE / REACT BUILD
+=====================================================
+
+-----------------------------------
+# Stage 1: Build stage
+FROM node:18 AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# Stage 2: Runtime stage
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+-----------------------------------
+
+=====================================================
+47. EXPLANATION OF ABOVE DOCKERFILE
+=====================================================
+
+Stage 1 (builder):
+- Uses Node image
+- Installs dependencies
+- Builds application
+- Contains build tools (not needed later)
+
+Stage 2 (runtime):
+- Uses lightweight nginx image
+- Copies only final build output
+- No node_modules
+- No build tools
+
+=====================================================
+48. BENEFITS OF MULTI-STAGE BUILDS
+=====================================================
+
+- Smaller image size
+- Faster container startup
+- Better security
+- Clean production image
+- Separation of build & runtime
+
+=====================================================
+49. MULTI-STAGE BUILD WITH PYTHON (EXAMPLE)
+=====================================================
+
+-----------------------------------
+# Stage 1: Builder
+FROM python:3.11 AS builder
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+COPY . .
+
+# Stage 2: Runtime
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /app /app
+
+ENV PATH=/root/.local/bin:$PATH
+
+CMD ["python", "main.py"]
+-----------------------------------
+
+=====================================================
+50. WHEN TO USE MULTI-STAGE BUILDS
+=====================================================
+
+Use multi-stage builds when:
+- Application needs compilation/build
+- You want small production images
+- Security is important
+- CI/CD pipelines are used
+
+=====================================================
+51. DOCKER REGISTRY vs DOCKER COMPOSE vs MULTI-STAGE
+=====================================================
+
+Docker Registry:
+- Stores and distributes images
+
+Docker Compose:
+- Runs multiple containers together
+
+Multi-stage Build:
+- Optimizes how images are built
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 =====================================================
 END OF DOCUMENT

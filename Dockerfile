@@ -1,4 +1,6 @@
-FROM python:3.11-slim
+# Stage 1
+# Install the Main Big Size Python packages at the very first time
+FROM python:3.11 AS builder
 
 # Prevent Python from writing pyc files
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -15,7 +17,14 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# --------------------- Then Use Slim size image to build your project docker image.
+FROM python:3.11-alpine
+
+WORKDIR /app
+
+COPY --from=builder /install /usr/local
 
 # Copy application code
 COPY . .
