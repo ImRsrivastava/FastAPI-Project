@@ -13,6 +13,8 @@ services:
                 condition: service_healthy
         networks:
             -   backend
+        volumes:
+            -   ./:/app
         restart: always
 
     db:

@@ -62,6 +62,8 @@
 `pip install passlib`
 `pip install bcrypt==4.0.1`  <!-- This version 4.0.1 is always need to use, It a compatible version for Password Hashing in fastapi, if you are using passlib -->
 `pip install python-multipart`
+`pip install python-jose[cryptography]`
+`pip install pytest`
 
 ###### Alembic Theory ###### 
 `pip install alembic`
@@ -107,3 +109,11 @@ At the very first thing we need to do, Need to open alembic.ini (on the root) fi
 # Next Step:
 Go to the `alembic/env.py` file. In this file we need to import our models.
 Next thing find in the same `alembic/env.py` file, find `target_metadata = None` and put `models.Base.metadata` instead of `None`.
+
+
+###### Test Cases: Unit Test ###### 
+
+
+###### Jinja 2 Template ###### 
+`pip install aiofiles`
+`pip install jinja2`
