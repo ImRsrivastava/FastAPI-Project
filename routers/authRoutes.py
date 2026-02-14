@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from request_models.authRequestModel import AuthRequest, TokenRequest
 from passlib.context import CryptContext
 # from models.AuthsModel import Auths
@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
 from jose import jwt, JWTError
 from datetime import timedelta, datetime
+from fastapi.templating import Jinja2Templates
 
 
 router = APIRouter(
@@ -21,6 +22,19 @@ ALGORITHM = "HS256"
 
 bcryptContext = CryptContext( schemes = ['bcrypt'], deprecated = "auto" )
 oauth2Bearer = OAuth2PasswordBearer(tokenUrl = "auth/login")
+templates = Jinja2Templates(directory = "templates")
+
+##### HTML Page Loading #####
+@router.get("/login")
+def render_login_page (request: Request):
+    return templates.TemplateResponse('login.html', {"request": request})
+
+
+##### HTML Page Loading End #####
+
+
+
+
 
 
 def authenticateAuth (username: str, password: str, db):
